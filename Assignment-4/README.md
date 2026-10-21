@@ -5,9 +5,8 @@
 Repository: https://github.com/opstree/OT-Microservices
 
 **Status summary:** Step 1 and Step 2 were completed and verified
-locally. Step 3's image bundle and deployment folder were prepared for
-transfer, but a successful run on the buddy's computer has not been
-confirmed. Step 4 replicas were started and basic stop/restart tests
+locally. Step 3's Docker Hub publishing and deployment instructions were prepared,
+but a successful run on the buddy's computer has not been confirmed. Step 4 replicas were started and basic stop/restart tests
 were performed; full backend health/high availability is not yet proven
 because Employee API requests were observed returning HTTP 500. Step 5
 (bonus) has not yet been demonstrated.
@@ -144,44 +143,145 @@ remove named data volumes.
 
 ------------------------------------------------------------------------
 
-## Step 3 --- Let a buddy run it without cloning
+## Step 3 --- Let a buddy run it without cloning (Docker Hub)
 
-### What was prepared
+### Overview
 
-Created `ot-microservices-images.tar`, containing the eight images used
-by the deployment. The archive was approximately 2.3 GB and saved at:
-`~/Music/mg/docker/Assignment-4/ot-microservices-images.tar`
+Instead of exporting Docker images into an archive, publish the six custom
+application images to Docker Hub. The buddy can then pull the images and run
+the application using the `OT-Deployment/` directory, without cloning the
+source-code repository.
 
-Transfer both items to the buddy: 1. `ot-microservices-images.tar` 2.
-The complete `OT-Deployment/` directory
+The six custom images are:
 
-The buddy needs Docker Engine and the Docker Compose plugin, and the
-required host ports must be available.
+- `ot-microservices-empms-es`
+- `ot-microservices-empms-db`
+- `ot-microservices-empms-attendance`
+- `ot-microservices-empms-salary`
+- `ot-microservices-empms-employee`
+- `ot-microservices-empms-frontend`
 
-### Commands for the buddy
+Kibana and Traefik are third-party images and can be pulled from their
+configured registries.
 
-After copying the archive and folder:
+### 1. Log in to Docker Hub
 
-``` bash
-docker load -i ot-microservices-images.tar
+Create a Docker Hub account if needed, then log in from the machine that has
+the built images:
+
+```bash
+docker login
+```
+
+Replace `YOUR_DOCKERHUB_USERNAME` in the commands below with your Docker Hub
+username. Make sure the Docker Hub repositories are public if your buddy
+should pull the images without logging in; otherwise, give the buddy access
+and have them authenticate with `docker login`.
+
+### 2. Tag and push the six custom images
+
+Run these commands on the machine where the images were built:
+
+```bash
+docker tag ot-microservices-empms-es:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-es:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-es:latest
+
+docker tag ot-microservices-empms-db:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-db:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-db:latest
+
+docker tag ot-microservices-empms-attendance:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-attendance:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-attendance:latest
+
+docker tag ot-microservices-empms-salary:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-salary:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-salary:latest
+
+docker tag ot-microservices-empms-employee:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-employee:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-employee:latest
+
+docker tag ot-microservices-empms-frontend:latest YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-frontend:latest
+docker push YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-frontend:latest
+```
+
+### 3. Update the deployment Compose file
+
+In `OT-Deployment/docker-compose.yaml`, update each of the six custom
+services so its `image:` value points to the corresponding Docker Hub image.
+For example, change:
+
+```yaml
+services:
+  empms-db:
+    image: ot-microservices-empms-db:latest
+```
+
+to:
+
+```yaml
+services:
+  empms-db:
+    image: YOUR_DOCKERHUB_USERNAME/ot-microservices-empms-db:latest
+```
+
+Apply the same naming pattern to the other five custom images. Keep the
+third-party image names, configuration bind mounts, named volumes, service
+dependencies, and port mappings as defined in the deployment Compose file.
+The deployment file should use the prebuilt `image:` entries and should not
+need source-code `build:` contexts.
+
+Validate the updated Compose file:
+
+```bash
 cd OT-Deployment
+docker compose config -q
+```
+
+### 4. Share the deployment folder with the buddy
+
+Share the complete `OT-Deployment/` directory, including:
+
+```text
+OT-Deployment/
+├── docker-compose.yaml
+└── config/
+    ├── elasticsearch.yml
+    ├── attendance-config.yaml
+    └── employee-config.yaml
+```
+
+No source-code repository or local image archive is required.
+
+### 5. Commands for the buddy
+
+The buddy needs Docker Engine, the Docker Compose plugin, internet access to
+pull the images, and the required host ports available. For private Docker
+Hub repositories, the buddy must also have permission to access the images.
+
+From the directory containing `OT-Deployment/`, run:
+
+```bash
+cd OT-Deployment
+docker compose pull
 docker compose up -d
 docker compose ps
 ```
 
-The buddy must also make the hostname resolve to their own computer by
-adding this to `/etc/hosts`:
+For public Docker Hub images, authentication is not required. For private
+images, run `docker login` first.
 
-``` text
+The buddy must also add this entry to their own `/etc/hosts` file:
+
+```text
 127.0.0.1 ot-microservices.opstree.com
 ```
 
 Then open `http://ot-microservices.opstree.com:8081`.
 
-**Status:** The archive and deployment folder are prepared. A successful
-run on the buddy's own computer still needs to be confirmed.
+**Status:** The Docker Hub workflow is documented. Step 3 is complete only
+after the six images have been pushed, the deployment Compose file has been
+updated, and the application has been successfully run on the buddy's
+computer.
 
-------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 ## Step 4 --- Scale Employee, Salary, and Attendance
 
