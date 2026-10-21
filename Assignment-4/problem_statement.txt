@@ -1,0 +1,11 @@
+Assigment-4
+In this assignment we will be working on Docker-Compose file in pair of 2, for our OT-
+Microservice App:
+Step1: Setup the OT-MICROSERVICE application fully Clone the code and run the
+app .
+Step2: Now delete the code from your local system and run the app fully
+Step3: Now your buddy in his/her system without cloning the code will run the app fully.
+Step4: Ensure your Employee, Salary and Attendance service are highly available.
+Bonus Assignment: Also Explore other power features of docker compose i.e You only
+want to run Attendance and MySQL container.
+Repo url:- https://github.com/opstree/OT-Microservices

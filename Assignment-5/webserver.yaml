@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empms-webserver
+  labels:
+    app: empms-webserver
+spec:
+  containers:
+    - name: webserver
+      image: nginx:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: empms-webserver
+spec:
+  selector:
+    app: empms-webserver
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP

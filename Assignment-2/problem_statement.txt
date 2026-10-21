@@ -1,0 +1,16 @@
+ASSIGNMENT2
+Create a DockerFile.
+    Use Ubuntu latest image.
+    Add your name as a Manintainer.
+    Update local packages using command (apt-get update).
+    Install nodejs package.
+    Install npm package.
+    Create a symlink using command (ln -s /usr/bin/nodejs /usr/bin/node).
+    Trigger a command (npm install -g http-server)
+    Add any test index.html file from local at /usr/apps/hello-docker/index.html on container.
+    change your working directory to /usr/apps/hello-docker/.
+    Run a command (http-server -s) on every container initialization.
+    Build your dockerfile and tag it with "yourname:docker-web"
+    Run a docker container from the image that you have just created and map container 8080 port to host 8080 port.(8080:8080)
+    Try accessing your webpage using "http://<virtualmachine_ipaddress>:8080/index.html" URL.
+    Delete docker container and image from local

@@ -1,0 +1,53 @@
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empms-attendance
+  labels:
+    app: empms-attendance
+spec:
+  containers:
+    - name: attendance
+      image: ot-microservices-empms-attendance:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8081
+      env:
+        - name: CONFIG_FILE
+          value: "/app/config.yaml"
+        - name: ELASTIC_APM_ENABLED
+          value: "false"
+      volumeMounts:
+        - name: attendance-config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+  volumes:
+    - name: attendance-config
+      configMap:
+        name: attendance-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: attendance-config
+data:
+  config.yaml: |
+    attendance:
+      api_port: "8081"
+    mysql:
+      db_name: "attendance_db"
+      host: "empms-db"
+      username: root
+      password: password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: empms-attendance
+spec:
+  selector:
+    app: empms-attendance
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP

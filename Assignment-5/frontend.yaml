@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empms-frontend
+  labels:
+    app: empms-frontend
+spec:
+  containers:
+    - name: frontend
+      image: ot-microservices-empms-frontend:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: empms-frontend
+spec:
+  selector:
+    app: empms-frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP

@@ -1,0 +1,31 @@
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empms-db
+  labels:
+    app: empms-db
+spec:
+  containers:
+    - name: mysql
+      image: ot-microservices-empms-db:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 3306
+      env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "password"
+        - name: MYSQL_DATABASE
+          value: "attendance_db"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: empms-db
+spec:
+  selector:
+    app: empms-db
+  ports:
+    - port: 3306
+      targetPort: 3306
+  type: ClusterIP

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: empms-salary
+  labels:
+    app: empms-salary
+spec:
+  containers:
+    - name: salary
+      image: ot-microservices-empms-salary:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
+      env:
+        - name: CONFIG_FILE
+          value: "/root/config/config.yaml"
+      volumeMounts:
+        - name: salary-config
+          mountPath: /root/config/config.yaml
+          subPath: config.yaml
+  volumes:
+    - name: salary-config
+      configMap:
+        name: salary-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: empms-salary
+spec:
+  selector:
+    app: empms-salary
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
